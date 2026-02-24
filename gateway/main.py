@@ -1,5 +1,7 @@
 # gateway/main.py
-from fastapi import FastAPI, HTTPException, Request, Depends
+import time
+import logging
+from fastapi import FastAPI, HTTPException, Request, Depends, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import httpx
@@ -7,7 +9,30 @@ import jwt
 from typing import Any
 from datetime import datetime, timedelta
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("API_Gateway")
+
 app = FastAPI(title="API Gateway", version="1.0.0")
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # 1. Note the exact time the request arrived
+    start_time = time.time()
+    
+    # 2. Log what the user is asking for
+    logger.info(f"Incoming: {request.method} {request.url}")
+    
+    # 3. Pass the request down to the actual route (like /gateway/students)
+    response = await call_next(request)
+    
+    # 4. Calculate how long it took the microservice to respond
+    process_time = time.time() - start_time
+    
+    # 5. Log the final result and the time it took
+    logger.info(f"Completed: {response.status_code} | Took: {process_time:.4f}s")
+    
+    return response
 
 # --- Auth Setup ---
 SECRET_KEY = "my_super_secret_lab_key"
@@ -67,8 +92,24 @@ async def forward_request(service: str, path: str, method: str, **kwargs) -> Any
                 content=response.json() if response.text else None,
                 status_code=response.status_code
             )
+        except httpx.ConnectError:
+            # Triggers if the microservice is completely turned off or unreachable
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+                detail=f"The '{service}' microservice is currently offline or unreachable. Please try again later."
+            )
+        except httpx.TimeoutException:
+            # Triggers if the microservice is running, but taking too long to answer
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT, 
+                detail=f"The '{service}' microservice took too long to respond."
+            )
         except httpx.RequestError as e:
-            raise HTTPException(status_code=503, detail=f"Service unavailable: {str(e)}")
+            # A catch-all for any other network-level errors
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                detail=f"An unexpected network error occurred communicating with the '{service}' service: {str(e)}"
+            )
 
 @app.get("/")
 def read_root():
@@ -104,10 +145,10 @@ async def delete_student(student_id: int):
 
 # --- Course Service Routes ---
 
-@app.get("/gateway/courses")
-async def get_all_courses():
-    """Get all courses through gateway"""
-    return await forward_request("course", "/api/courses", "GET")
+@app.get("/gateway/students")
+async def get_all_students(user: dict = Depends(verify_token)): 
+    """Get all students through gateway"""
+    return await forward_request("student", "/api/students", "GET")
 
 @app.post("/gateway/courses")
 async def create_course(request: Request):
