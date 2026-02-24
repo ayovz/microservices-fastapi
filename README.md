@@ -42,7 +42,7 @@ microservices-fastapi/
 └── requirements.txt         # Project dependencies
 ```
 
-##⚙️ Installation & Setup
+## ⚙️ Installation & Setup
 
 1. Clone the repository and navigate to the root directory:
 ```bash
