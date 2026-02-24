@@ -2,24 +2,24 @@
 
 This repository contains a fully functional microservices architecture built using Python and FastAPI. It demonstrates the API Gateway pattern by routing client requests to independent backend services while handling cross-cutting concerns like authentication and logging at the edge.
 
-[cite_start]This project was developed for **Practical 3** [cite: 4] [cite_start]of the **IT4020 - Modern Topics in IT** [cite: 5] [cite_start]module at **SLIIT**[cite: 1].
+This project was developed for **Practical 3** of the **IT4020 - Modern Topics in IT** module at **SLIIT**.
 
 ## 🚀 Features
 
-* [cite_start]**API Gateway Pattern:** A centralized entry point (Port 8000) that securely routes HTTP traffic to downstream microservices using `httpx`[cite: 10, 15].
+* **API Gateway Pattern:** A centralized entry point (Port 8000) that securely routes HTTP traffic to downstream microservices using `httpx`.
 * **Independent Microservices:** * **Student Service (Port 8001):** Manages student data with full CRUD capabilities.
-  * **Course Service (Port 8002):** Manages course catalog data.
+* **Course Service (Port 8002):** Manages course catalog data.
 * **JWT Authentication:** Secures gateway endpoints using JSON Web Tokens (OAuth2), ensuring only authorized users can access the downstream services.
 * **Observability (Logging Middleware):** Custom middleware intercepts all incoming requests to calculate processing times and log transaction details to the console.
 * **Resilient Error Handling:** Enhanced exception handling to gracefully manage network timeouts (504) and offline services (503).
 
 ## 🛠️ Tech Stack
 
-* [cite_start]**Python 3.8+** [cite: 12]
-* [cite_start]**FastAPI:** High-performance web framework[cite: 13].
-* [cite_start]**Uvicorn:** ASGI web server for running FastAPI[cite: 14].
-* [cite_start]**HTTPx:** Async HTTP client for gateway routing[cite: 15].
-* [cite_start]**Pydantic:** Data validation and settings management[cite: 15].
+* **Python 3.8+** [cite: 12]
+* **FastAPI:** High-performance web framework.
+* **Uvicorn:** ASGI web server for running FastAPI.
+* **HTTPx:** Async HTTP client for gateway routing.
+* **Pydantic:** Data validation and settings management.
 * **PyJWT:** JSON Web Token generation and validation.
 
 ## 📂 Project Structure
